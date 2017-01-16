@@ -1,5 +1,5 @@
-defmodule ElixirVcf.Vcf.VcfBody do
-  alias ElixirVcf.Vcf.VcfBody
+defmodule ExVcf.Vcf.VcfBody do
+  alias ExVcf.Vcf.VcfBody
 
   defstruct chrom: "",
     pos: 1,

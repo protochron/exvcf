@@ -1,5 +1,5 @@
-defmodule ElixirVcf.Vcf.Vcf do
-  alias ElixirVcf.Vcf.Vcf
+defmodule ExVcf.Vcf.Vcf do
+  alias ExVcf.Vcf.Vcf
 
   # The vcf version that this module implements
   @version 4.2

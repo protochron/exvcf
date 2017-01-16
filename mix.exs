@@ -1,4 +1,4 @@
-defmodule ElixirVcf.Mixfile do
+defmodule ExVcf.Mixfile do
   use Mix.Project
 
   def project do

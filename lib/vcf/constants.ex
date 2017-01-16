@@ -1,4 +1,4 @@
-defmodule ElixirVcf.Vcf.Constants do
+defmodule ExVcf.Vcf.Constants do
   @genotype_unphased "/"
   @genotype_phased "|"
 

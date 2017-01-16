@@ -1,8 +1,8 @@
-defmodule ElixirVcf.Andme.Genome do
-  alias ElixirVcf.Andme.Genome
+defmodule ExVcf.Andme.Genome do
+  alias ExVcf.Andme.Genome
 
-  require ElixirVcf.Vcf.VcfBody
-  alias ElixirVcf.Vcf.VcfBody
+  require ExVcf.Vcf.VcfBody
+  alias ExVcf.Vcf.VcfBody
 
   defstruct rsid: "",
     chromosome: "",

@@ -1,9 +1,13 @@
 defmodule ElixirVcf.Vcf.Vcf do
   alias ElixirVcf.Vcf.Vcf
 
-  defstruct fileformat: "4.0",
+  # The vcf version that this module implements
+  @version 4.2
+
+  defstruct fileformat: @version,
     header: [],
-    body: []
+    body: [],
+    missing: []
 
   def new do
     %Vcf{

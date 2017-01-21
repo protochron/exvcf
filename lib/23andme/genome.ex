@@ -1,8 +1,8 @@
 defmodule ExVcf.Andme.Genome do
   alias ExVcf.Andme.Genome
 
-  require ExVcf.Vcf.VcfBody
-  alias ExVcf.Vcf.VcfBody
+  require ExVcf.Vcf.Body
+  alias ExVcf.Vcf.Body
 
   defstruct rsid: "",
     chromosome: "",
@@ -58,7 +58,7 @@ defmodule ExVcf.Andme.Genome do
   def vcf_line(%Genome{genotype: "DD"}), do: ""
   def vcf_line(%Genome{genotype: "II"}), do: ""
   def vcf_line(data) do
-    body = %VcfBody{}
+    body = %Body{}
     chromosome = case data.chromosome do
       "MT" -> "chrM"
       x -> "chr#{x}"

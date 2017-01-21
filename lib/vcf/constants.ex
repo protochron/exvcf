@@ -24,9 +24,7 @@ defmodule ExVcf.Vcf.Constants do
   ]
 
   def genotype_phased, do: @genotype_phased
-
   def genotype_unphased, do: @genotype_unphased
-
   def reserved_info_keys, do: @reserved_info_keys
 
 end

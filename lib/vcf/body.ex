@@ -1,5 +1,5 @@
-defmodule ExVcf.Vcf.VcfBody do
-  alias ExVcf.Vcf.VcfBody
+defmodule ExVcf.Vcf.Body do
+  alias ExVcf.Vcf.Body
 
   defstruct chrom: "",
     pos: 1,

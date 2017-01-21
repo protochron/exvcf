@@ -43,16 +43,16 @@ defmodule ExVcf.Andme.Genome do
   #  fn(x) -> "" end) |> Enum.to_list
   #end
 
-  def genome_map(data) do
-    Enum.reduce(%{}, fn(x, acc) ->
-      case Map.get(acc, x.chr) do
-        nil -> Map.put(acc, x.chr, %{rsid:  data.rsid, ref: })
-        x -> Map.get(acc, x.chr) |> Map.put()
-      end
-      acc
-    end
-    )
-  end
+  #def genome_map(data) do
+  #  Enum.reduce(%{}, fn(x, acc) ->
+  #    case Map.get(acc, x.chr) do
+  #      nil -> Map.put(acc, x.chr, %{rsid:  data.rsid, ref: })
+  #      x -> Map.get(acc, x.chr) |> Map.put()
+  #    end
+  #    acc
+  #  end
+  #  )
+  #end
 
 
   def vcf_line(%Genome{genotype: "DD"}), do: ""

@@ -21,27 +21,26 @@ defmodule ExVcf.Vcf.Info do
     number: 0,
     type: "",
     description: "",
-    source: nil,
-    version: nil
+    optional_fields: []
 
-  def new_string(id, number, description, source \\ nil, version \\ nil) do
-    new(id, number, @string, description, source, version)
+  def new_string(id, number, description, optional \\ []) do
+    new(id, number, @string, description, optional)
   end
 
-  def new_integer(id, number, description, source \\ nil, version \\ nil) do
-    new(id, number, @integer, description, source, version)
+  def new_integer(id, number, description, optional \\ []) do
+    new(id, number, @integer, description, optional)
   end
 
-  def new_float(id, number, description, source \\ nil, version \\ nil) do
-    new(id, number, @float, description, source, version)
+  def new_float(id, number, description, optional \\ []) do
+    new(id, number, @float, description, optional)
   end
 
-  def new_character(id, number, description, source \\ nil, version \\ nil) do
-    new(id, number, @character, description, source, version)
+  def new_character(id, number, description, optional \\ []) do
+    new(id, number, @character, description, optional)
   end
 
-  def new_flag(id, number, description, source \\ nil, version \\ nil) do
-    new(id, number, @flag, description, source, version)
+  def new_flag(id, number, description, optional \\ []) do
+    new(id, number, @flag, description, optional)
   end
 
   # Special-case numeric types
@@ -50,35 +49,40 @@ defmodule ExVcf.Vcf.Info do
   def one_per_genotype, do: @one_per_genotype
   def unbounded, do: @unbounded
 
+  def header(), do: @header
+
   @doc """
   Write out the INFO field as a string to be used in the header
   """
-  def header_info(info) do
-    @header <> "<#{header_string(info)}>"
+  defimpl ExVcf.Vcf.HeaderLine, for: Info do
+    def header_line(nil), do: Info.header
+    def header_line(info) do
+      Info.header_string(info)
+    end
   end
 
-  defp header_string(info) do
-    str = "ID=#{info.id},Number=#{info.number},Type=#{Atom.to_string(info.type) |> String.capitalize},Description=\"#{info.description}\""
-    str = case info.source  do
-      nil -> str
-      _ -> str <> ",Source=\"#{info.source}\""
-    end
-
-    str = case info.version do
-      nil -> str
-      _ -> str <> ",Version=\"#{info.version}\""
-    end
-    str
+  # TODO figure out if there's a more generic way to handle this
+  def header_string(info) do
+    type_str = info.type |> Atom.to_string |> String.capitalize
+    str = "ID=#{info.id},Number=#{info.number},Type=#{type_str},Description=\"#{info.description}\""
+    #addtional_fields = Enum.reduce(info.optional_fields, "",
+    #                               fn({k, v}, acc) ->
+    #                                 acc <> "#{k |> Atom.to_string |> String.capitalize}=\"#{v}\"" end)
+    #header <> "<" <> str <> additional_fields <> ">"
+    new_fields = Enum.reduce(info.optional_fields, [],
+                fn(x, acc) ->
+                  {k, v} = x
+                  acc ++ ["#{k |> Atom.to_string |> String.capitalize}=\"#{v}\""] end)
+      "#{header()}<#{str},#{Enum.join(new_fields, ",")}>"
   end
 
-  defp new(id, number, type, description, source, version) do
+  defp new(id, number, type, description, optional) do
     %Info{
       id: id,
       number: number,
       type: type,
       description: description,
-      source: source,
-      version: version
+      optional_fields: optional
     }
   end
 end

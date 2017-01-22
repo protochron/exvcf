@@ -24,6 +24,7 @@ defmodule ExVcf.Vcf.Filter do
     %Filter{id: id, description: desc}
   end
 
+  def header_line, do: @header
 
   @doc ~S"""
   Get a filter line as a string

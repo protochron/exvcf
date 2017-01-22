@@ -9,7 +9,6 @@ defmodule ExVcf.Vcf.Vcf do
 
   defstruct fileformat: @version,
     header: [],
-    info: [],
     body: [],
     missing: []
 

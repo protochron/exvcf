@@ -61,19 +61,14 @@ defmodule ExVcf.Vcf.Info do
     end
   end
 
-  # TODO figure out if there's a more generic way to handle this
+  # TODO figure out if there's a more generic way to handle this across the protocol
   def header_string(info) do
     type_str = info.type |> Atom.to_string |> String.capitalize
-    str = "ID=#{info.id},Number=#{info.number},Type=#{type_str},Description=\"#{info.description}\""
-    #addtional_fields = Enum.reduce(info.optional_fields, "",
-    #                               fn({k, v}, acc) ->
-    #                                 acc <> "#{k |> Atom.to_string |> String.capitalize}=\"#{v}\"" end)
-    #header <> "<" <> str <> additional_fields <> ">"
-    new_fields = Enum.reduce(info.optional_fields, [],
-                fn(x, acc) ->
-                  {k, v} = x
-                  acc ++ ["#{k |> Atom.to_string |> String.capitalize}=\"#{v}\""] end)
-      "#{header()}<#{str},#{Enum.join(new_fields, ",")}>"
+    str = ["ID=#{info.id}","Number=#{info.number}","Type=#{type_str}","Description=\"#{info.description}\""]
+    new_fields = ExVcf.Vcf.Header.accumulate_fields(info.optional_fields)
+
+    fields = str ++ new_fields
+    "#{header()}<#{Enum.join(fields, ",")}>"
   end
 
   defp new(id, number, type, description, optional) do

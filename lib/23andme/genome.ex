@@ -20,6 +20,21 @@ defmodule ExVcf.Andme.Genome do
     apply(Genome, :new, data)
   end
 
+  def ref_path, do:  Path.join(~w(#{File.cwd!} data /23andme_v4_hg19_ref.txt.gz))
+  def read_reference do
+    ref_path
+      |> File.stream!([:compressed])
+      |> Enum.reduce(%{}, fn(x, acc) ->
+        [chr, pos, rsid, ref] = String.split(x, "\t")
+        chr = String.to_atom(chr)
+        acc = case Map.get(acc, chr) do
+          nil -> Map.put(acc, chr, %{String.to_integer(pos) => %{}})
+          current -> acc
+        end
+        put_in(acc, [chr, String.to_integer(pos)], %{rsid: rsid, ref: String.trim(ref)})
+      end)
+  end
+
   def read_from_file(filename) do
     File.stream!(filename)
     |> Stream.filter_map(

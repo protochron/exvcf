@@ -7,7 +7,7 @@ defmodule ExVcf.Vcf.Filter do
   The format looks something like: ##FILTER=<ID=ID,Description="description">
   """
 
-  @header_type"FILTER"
+  @header_type "FILTER"
   def type, do: @header_type
 
   @doc ~S"""

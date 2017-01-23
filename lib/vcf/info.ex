@@ -8,7 +8,7 @@ defmodule ExVcf.Vcf.Info do
   @doc ~S"""
   ## Examples
       iex> ExVcf.Vcf.Info.new_string("NS", 1, "Number of Samples With Data")
-      %ExVcf.Vcf.HeaderLine{fields: {ID: "NS", Number: 1, Type: "String", "Description": "Number of Samples With Data"}
+      %ExVcf.Vcf.HeaderLine{fields: [ID: "NS", Number: 1, Type: "String", "Description": "Number of Samples With Data"], key: "INFO", value: ""}
   """
   def new_string(id, number, description, fields \\ []) do
     HeaderLine.new(@header_type, [ID: id, Number: number, Type: HeaderLine.string, Description: description] ++ fields)
@@ -22,8 +22,8 @@ defmodule ExVcf.Vcf.Info do
     HeaderLine.new(@header_type, [ID: id, Number: number, Type: HeaderLine.float, Description: description] ++ fields)
   end
 
-  def new_flag(id, number, description, fields \\ []) do
-    HeaderLine.new(@header_type, [ID: id, Number: number, Type: HeaderLine.flag, Description: description] ++ fields)
+  def new_flag(id, description, fields \\ []) do
+    HeaderLine.new(@header_type, [ID: id, Number: 0, Type: HeaderLine.flag, Description: description] ++ fields)
   end
 
   def new_character(id, number, description, fields \\ []) do

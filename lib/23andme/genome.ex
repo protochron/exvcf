@@ -46,32 +46,32 @@ defmodule ExVcf.Andme.Genome do
   def vcf_line(_, %Genome{genotype: "DD"}), do: ""
   def vcf_line(_, %Genome{genotype: "II"}), do: ""
   def vcf_line(ref, data) do
-    body = %Body{pos: data.position, ref: data.rsid}
+    body = %Body{pos: data.position, id: data.rsid, ref: Map.get(ref, :ref)}
     chromosome = case data.chromosome do
       "MT" -> "chrM"
       x -> "chr#{x}"
     end
     allele = String.split(data.genotype, "", parts: 2)
-    proc_allele(ref, %{body | chrom: chromosome}, allele)
+    proc_allele(%{body | chrom: chromosome}, allele)
   end
 
-  defp proc_allele(ref, vcf, [a, ""]) do
-    case a == Map.get(ref, :ref) do
+  defp proc_allele(vcf, [a, ""]) do
+    case a == vcf.ref do
       true -> %{vcf | alt: ".", format: ["GT"], misc: ["0"]}
       false -> %{vcf | alt: a, format: ["GT"], misc: ["1"]}
     end
   end
   defp proc_allele(ref, vcf, [a, b]) when a == b do
-    case a == Map.get(ref, :ref) do
+    case a == vcf.ref do
       true -> %{vcf | alt: ".", format: ["GT"], misc: ["0/0"]}
       false -> %{vcf | alt: a, format: ["GT"], misc: ["1/1"]}
     end
   end
-  defp proc_allele(ref, vcf, [a, b]) do
+  defp proc_allele(vcf, [a, b]) do
     cond do
-      a == Map.get(ref, :ref) ->
+      a == vcf.ref ->
         %{vcf | alt: b, format: ["GT"], misc: ["0/1"]}
-      b == Map.get(ref, :ref) ->
+      b == vcf.ref ->
         %{vcf | alt: a, format: ["GT"], misc: ["0/1"]}
       true ->
         %{vcf | alt: "#{a},#{b}", format: ["GT"], misc: ["1/2"]}

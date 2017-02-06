@@ -46,12 +46,15 @@ defmodule ExVcf.Andme.Genome do
   def vcf_line(_, %Genome{genotype: "DD"}), do: ""
   def vcf_line(_, %Genome{genotype: "II"}), do: ""
   def vcf_line(ref, data) do
-    body = %Body{pos: data.position, id: data.rsid, ref: Map.get(ref, :ref)}
+    ref_base = ref |> Map.get(:ref) |> String.capitalize
+    body = %Body{pos: data.position, id: data.rsid, ref: ref_base}
     chromosome = case data.chromosome do
       "MT" -> "chrM"
       x -> "chr#{x}"
     end
-    allele = String.split(data.genotype, "", parts: 2)
+    allele = data.genotype
+             |> String.split("", parts: 2)
+             |> Enum.map(fn(x) -> String.capitalize(x) end)
     proc_allele(%{body | chrom: chromosome}, allele)
   end
 

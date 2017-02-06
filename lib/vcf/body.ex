@@ -10,6 +10,9 @@ defmodule ExVcf.Vcf.Body do
     filter: "",
     info: %{},
     format: [],
-    samples: []
+    misc: []
+
+  def str do
+  end
 
 end

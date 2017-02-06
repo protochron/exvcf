@@ -4,6 +4,8 @@ defmodule ExVcf.Andme.Genome do
   require ExVcf.Vcf.Body
   alias ExVcf.Vcf.Body
 
+  @bases ~r(/[A,C,G,T,N,a,c,g,t,n]/)
+
   defstruct rsid: "",
     chromosome: "",
     position: 0,
@@ -23,51 +25,56 @@ defmodule ExVcf.Andme.Genome do
   # This is a pre-compressed binary representation of a map
   def ref_path, do:  Path.join(~w(#{File.cwd!} data /23andme_v4_hg19_ref.erlang))
   def read_reference do
-    ref_path |> File.read! |> :erlang.binary_to_term
+    ref_path() |> File.read! |> :erlang.binary_to_term
   end
 
   def read_from_file(filename) do
-    File.stream!(filename, read_ahead: 10_000_000)
-    |> Stream.filter_map(fn(x) ->
-        case String.first(x) do
-          "#" -> false
-          _ -> true
-        end end,
-        fn(x) -> new(String.split(x, "\t")) end)
-    |> Enum.to_list
+    filename |>
+    File.read!
+    |> String.splitter("\n", trim: true)
+    |> Enum.filter(&filter_line/1)
+    |> Enum.map(fn(x) -> new(String.split(x, "\t")) end)
   end
 
-  #def convert_vcf(data) do
-  #  Stream.filter_map(data, fn(x) ->
-  #    case x.genotype do
-  #      "DD" -> false
-  #      "II" -> false
-  #      _ -> true
-  #    end
-  #  end,
-  #  fn(x) -> "" end) |> Enum.to_list
-  #end
+  def filter_line(line) do
+    case String.first(line) do
+      "#" -> false
+      _ -> true
+    end
+  end
 
-  #def genome_map(data) do
-  #  Enum.reduce(%{}, fn(x, acc) ->
-  #    case Map.get(acc, x.chr) do
-  #      nil -> Map.put(acc, x.chr, %{rsid:  data.rsid, ref: })
-  #      x -> Map.get(acc, x.chr) |> Map.put()
-  #    end
-  #    acc
-  #  end
-  #  )
-  #end
-
-
-  def vcf_line(%Genome{genotype: "DD"}), do: ""
-  def vcf_line(%Genome{genotype: "II"}), do: ""
-  def vcf_line(data) do
-    body = %Body{}
+  def vcf_line(_, %Genome{genotype: "DD"}), do: ""
+  def vcf_line(_, %Genome{genotype: "II"}), do: ""
+  def vcf_line(ref, data) do
+    body = %Body{pos: data.position, ref: data.rsid}
     chromosome = case data.chromosome do
       "MT" -> "chrM"
       x -> "chr#{x}"
     end
-    body = %{body | chrom: chromosome}
+    allele = String.split(data.genotype, "", parts: 2)
+    proc_allele(ref, %{body | chrom: chromosome}, allele)
+  end
+
+  defp proc_allele(ref, vcf, [a, ""]) do
+    case a == Map.get(ref, :ref) do
+      true -> %{vcf | alt: ".", format: ["GT"], misc: ["0"]}
+      false -> %{vcf | alt: a, format: ["GT"], misc: ["1"]}
+    end
+  end
+  defp proc_allele(ref, vcf, [a, b]) when a == b do
+    case a == Map.get(ref, :ref) do
+      true -> %{vcf | alt: ".", format: ["GT"], misc: ["0/0"]}
+      false -> %{vcf | alt: a, format: ["GT"], misc: ["1/1"]}
+    end
+  end
+  defp proc_allele(ref, vcf, [a, b]) do
+    cond do
+      a == Map.get(ref, :ref) ->
+        %{vcf | alt: b, format: ["GT"], misc: ["0/1"]}
+      b == Map.get(ref, :ref) ->
+        %{vcf | alt: a, format: ["GT"], misc: ["0/1"]}
+      true ->
+        %{vcf | alt: "#{a},#{b}", format: ["GT"], misc: ["1/2"]}
+    end
   end
 end

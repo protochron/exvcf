@@ -3,6 +3,7 @@ defmodule ExVcf.Andme.Genome do
 
   require ExVcf.Vcf.Body
   alias ExVcf.Vcf.Body
+  alias ExVcf.Vcf.Vcf
 
   @bases ~r(/[A,C,G,T,N,a,c,g,t,n]/)
 
@@ -28,34 +29,69 @@ defmodule ExVcf.Andme.Genome do
     ref_path() |> File.read! |> :erlang.binary_to_term
   end
 
+  # TODO Add error handling somewhere in here
   def read_from_file(filename) do
     filename |>
     File.read!
     |> String.splitter("\n", trim: true)
-    |> Enum.filter(&filter_line/1)
-    |> Enum.map(fn(x) -> new(String.split(x, "\t")) end)
+    |> Enum.reduce([], fn(x, acc) ->
+      case String.first(x) do
+        "#" -> acc
+        _ -> [new(String.split(x, "\t")) | acc]
+      end
+    end)
+    |> Enum.reverse
   end
 
-  def filter_line(line) do
-    case String.first(line) do
-      "#" -> false
-      _ -> true
+  # TODO clean up this mess
+  def convert(file) do
+    errors = []
+    ref = read_reference()
+    result = file |> Enum.reduce([], fn(x, acc) ->
+      case Map.get(ref, String.to_atom(convert_chrom(x.chromosome))) do
+        nil ->
+          [x | errors]
+          acc
+        chrom ->
+          case Map.get(chrom, x.position) do
+            nil -> acc
+            val -> [vcf_line(val, x) | acc]
+          end
+      end
+    end)
+    |> Enum.reverse
+
+    case errors do
+      [] -> {:ok, result}
+      _ -> {:error, result, errors}
     end
   end
 
+  def vcf(file) do
+    case convert(file) do
+      {:ok, result} ->
+        vcf = Vcf.new
+        #vcf = %{vcf | header: vcf.header ++ ExVcf.Vcf.Format.new_string("GT", 1, "Genotype")
+    end
+  end
+
+  defp convert_chrom(chrom) do
+    case chrom do
+      "MT" -> "chrM"
+      x -> "chr#{x}"
+    end
+  end
+
+  def vcf_line(_, %Genome{genotype: "--"}), do: ""
   def vcf_line(_, %Genome{genotype: "DD"}), do: ""
   def vcf_line(_, %Genome{genotype: "II"}), do: ""
   def vcf_line(ref, data) do
     ref_base = ref |> Map.get(:ref) |> String.capitalize
     body = %Body{pos: data.position, id: data.rsid, ref: ref_base}
-    chromosome = case data.chromosome do
-      "MT" -> "chrM"
-      x -> "chr#{x}"
-    end
     allele = data.genotype
              |> String.split("", parts: 2)
              |> Enum.map(fn(x) -> String.capitalize(x) end)
-    proc_allele(%{body | chrom: chromosome}, allele)
+    proc_allele(%{body | chrom: convert_chrom(data.chromosome)}, allele)
   end
 
   defp proc_allele(vcf, [a, ""]) do

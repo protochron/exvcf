@@ -73,12 +73,17 @@ defmodule ExVcf.Vcf.HeaderLine do
 
   defp complex_header(line) do
     data = line.fields
-           |> Enum.map(fn({k, v}) -> "#{Atom.to_string(k)}=#{v}" end)
+           |> Enum.map(fn({k, v}) ->
+             case k == :Type or k == :Number or k == :ID do
+               true -> "#{Atom.to_string(k)}=#{v}"
+               false -> "#{Atom.to_string(k)}=\"#{v}\""
+             end
+           end)
            |> Enum.join(",")
-    "###{line.key}=<#{data}>"
+    "###{line.key}=<#{data}>\n"
   end
 
   defp simple_header(line) do
-    "###{line.key}=#{line.value}"
+    "###{line.key}=#{line.value}\n"
   end
 end

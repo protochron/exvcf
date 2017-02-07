@@ -29,4 +29,8 @@ defmodule ExVcf.Vcf.Info do
   def new_character(id, number, description, fields \\ []) do
     HeaderLine.new(@header_type, [ID: id, Number: number, Type: HeaderLine.character, Description: description] ++ fields)
   end
+
+  def imprecise(), do: new_flag("IMPRECISE", "Imprecise structural variation")
+  def novel(), do: new_flag("NOVEL", "Indicates a novel structural variation")
+  def end_pos(), do: new_integer("END", 1, "End position of the variant described in this record")
 end

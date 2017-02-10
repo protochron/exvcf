@@ -108,16 +108,16 @@ defmodule ExVcf.Andme.Genome do
     proc_allele(%{body | chrom: convert_chrom(data.chromosome)}, allele)
   end
 
-  defp proc_allele(vcf, [a, b]) when a == b do
-    case a == vcf.ref do
-      true -> %{vcf | alt: ".", format: ["GT"], misc: ["0#{ExVcf.Vcf.Constants.genotype_unphased}0"]}
-      false -> %{vcf | alt: a, format: ["GT"], misc: ["1#{ExVcf.Vcf.Constants.genotype_unphased}1"]}
-    end
-  end
   defp proc_allele(vcf, [a, ""]) do
     case a == vcf.ref do
       true -> %{vcf | alt: ".", format: ["GT"], misc: ["0"]}
       false -> %{vcf | alt: a, format: ["GT"], misc: ["1"]}
+    end
+  end
+  defp proc_allele(vcf, [a, b]) when a == b do
+    case a == vcf.ref do
+      true -> %{vcf | alt: ".", format: ["GT"], misc: ["0#{ExVcf.Vcf.Constants.genotype_unphased}0"]}
+      false -> %{vcf | alt: a, format: ["GT"], misc: ["1#{ExVcf.Vcf.Constants.genotype_unphased}1"]}
     end
   end
   defp proc_allele(vcf, [a, b]) do

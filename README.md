@@ -1,24 +1,15 @@
-# ElixirVcf
+# ExVcf
 
-**TODO: Add description**
+A library for working with
+[VCF](https://en.wikipedia.org/wiki/Variant_Call_Format) v4.3 data in Elixir.
+
+It also includes the ability to convert raw data from
+[23andme](https://www.23andme.com/) to VCF for use with more sophisticated
+tools.
+
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
+TODO once a Hex release has been made
 
-  1. Add `elixir_vcf` to your list of dependencies in `mix.exs`:
-
-    ```elixir
-    def deps do
-      [{:elixir_vcf, "~> 0.1.0"}]
-    end
-    ```
-
-  2. Ensure `elixir_vcf` is started before your application:
-
-    ```elixir
-    def application do
-      [applications: [:elixir_vcf]]
-    end
-    ```
-
+## Usage

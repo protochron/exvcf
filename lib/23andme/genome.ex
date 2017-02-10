@@ -96,6 +96,9 @@ defmodule ExVcf.Andme.Genome do
   def vcf_line(_, %Genome{genotype: "--"}), do: nil
   def vcf_line(_, %Genome{genotype: "DD"}), do: nil
   def vcf_line(_, %Genome{genotype: "II"}), do: nil
+  def vcf_line(_, %Genome{genotype: "DI"}), do: nil
+  def vcf_line(_, %Genome{genotype: "I"}), do: nil
+  def vcf_line(_, %Genome{genotype: "D"}), do: nil
   def vcf_line(ref, data) do
     ref_base = ref |> Map.get(:ref) |> String.capitalize
     body = %Body{pos: data.position, id: [data.rsid], ref: ref_base}
@@ -105,16 +108,16 @@ defmodule ExVcf.Andme.Genome do
     proc_allele(%{body | chrom: convert_chrom(data.chromosome)}, allele)
   end
 
+  defp proc_allele(vcf, [a, b]) when a == b do
+    case a == vcf.ref do
+      true -> %{vcf | alt: ".", format: ["GT"], misc: ["0#{ExVcf.Vcf.Constants.genotype_unphased}0"]}
+      false -> %{vcf | alt: a, format: ["GT"], misc: ["1#{ExVcf.Vcf.Constants.genotype_unphased}1"]}
+    end
+  end
   defp proc_allele(vcf, [a, ""]) do
     case a == vcf.ref do
       true -> %{vcf | alt: ".", format: ["GT"], misc: ["0"]}
       false -> %{vcf | alt: a, format: ["GT"], misc: ["1"]}
-    end
-  end
-  defp proc_allele(ref, vcf, [a, b]) when a == b do
-    case a == vcf.ref do
-      true -> %{vcf | alt: ".", format: ["GT"], misc: ["0#{ExVcf.Vcf.Constants.genotype_unphased}0"]}
-      false -> %{vcf | alt: a, format: ["GT"], misc: ["1#{ExVcf.Vcf.Constants.genotype_unphased}1"]}
     end
   end
   defp proc_allele(vcf, [a, b]) do

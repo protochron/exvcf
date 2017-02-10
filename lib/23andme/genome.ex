@@ -55,7 +55,11 @@ defmodule ExVcf.Andme.Genome do
         chrom ->
           case Map.get(chrom, x.position) do
             nil -> acc
-            val -> [vcf_line(val, x) | acc]
+            val -> case vcf_line(val, x) do
+              nil -> acc
+              res -> [res | acc]
+            end
+
           end
       end
     end)
@@ -68,11 +72,18 @@ defmodule ExVcf.Andme.Genome do
   end
 
   def vcf(file) do
-    case convert(file) do
+    case file |> read_from_file |> convert do
       {:ok, result} ->
         vcf = Vcf.new
-        #vcf = %{vcf | header: vcf.header ++ ExVcf.Vcf.Format.new_string("GT", 1, "Genotype")
+        header = vcf.header
+                 |> ExVcf.Vcf.Header.add_format(ExVcf.Vcf.Format.new_string("GT", 1, "Genotype"))
+                 |> ExVcf.Vcf.Header.add_sample("GENOTYPE")
+        %{vcf | header: header, body: result} |> stringify
     end
+  end
+
+  def stringify(vcf) do
+    [ExVcf.Vcf.Header.stringify(vcf.header), Enum.map(vcf.body, fn(x) -> Body.str(x) end)]
   end
 
   defp convert_chrom(chrom) do
@@ -82,12 +93,12 @@ defmodule ExVcf.Andme.Genome do
     end
   end
 
-  def vcf_line(_, %Genome{genotype: "--"}), do: ""
-  def vcf_line(_, %Genome{genotype: "DD"}), do: ""
-  def vcf_line(_, %Genome{genotype: "II"}), do: ""
+  def vcf_line(_, %Genome{genotype: "--"}), do: nil
+  def vcf_line(_, %Genome{genotype: "DD"}), do: nil
+  def vcf_line(_, %Genome{genotype: "II"}), do: nil
   def vcf_line(ref, data) do
     ref_base = ref |> Map.get(:ref) |> String.capitalize
-    body = %Body{pos: data.position, id: data.rsid, ref: ref_base}
+    body = %Body{pos: data.position, id: [data.rsid], ref: ref_base}
     allele = data.genotype
              |> String.split("", parts: 2)
              |> Enum.map(fn(x) -> String.capitalize(x) end)
@@ -102,18 +113,18 @@ defmodule ExVcf.Andme.Genome do
   end
   defp proc_allele(ref, vcf, [a, b]) when a == b do
     case a == vcf.ref do
-      true -> %{vcf | alt: ".", format: ["GT"], misc: ["0/0"]}
-      false -> %{vcf | alt: a, format: ["GT"], misc: ["1/1"]}
+      true -> %{vcf | alt: ".", format: ["GT"], misc: ["0#{ExVcf.Vcf.Constants.genotype_unphased}0"]}
+      false -> %{vcf | alt: a, format: ["GT"], misc: ["1#{ExVcf.Vcf.Constants.genotype_unphased}1"]}
     end
   end
   defp proc_allele(vcf, [a, b]) do
     cond do
       a == vcf.ref ->
-        %{vcf | alt: b, format: ["GT"], misc: ["0/1"]}
+        %{vcf | alt: b, format: ["GT"], misc: ["0#{ExVcf.Vcf.Constants.genotype_unphased}1"]}
       b == vcf.ref ->
-        %{vcf | alt: a, format: ["GT"], misc: ["0/1"]}
+        %{vcf | alt: a, format: ["GT"], misc: ["0#{ExVcf.Vcf.Constants.genotype_unphased}1"]}
       true ->
-        %{vcf | alt: "#{a},#{b}", format: ["GT"], misc: ["1/2"]}
+        %{vcf | alt: "#{a},#{b}", format: ["GT"], misc: ["1#{ExVcf.Vcf.Constants.genotype_unphased}2"]}
     end
   end
 end

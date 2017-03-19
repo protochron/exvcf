@@ -29,7 +29,12 @@ defmodule ExVcf.Mixfile do
   defp deps do
     [
       {:credo, "~> 0.5.3", only: [:dev, :test]},
-      {:ex_doc, "~> 0.14.5", only: :dev}
+      {:ex_doc, "~> 0.14.5", only: :dev},
+      {:flow, "~> 0.11"},
+      {:benchee, "~> 0.6.0", only: [:dev, :test]},
+      {:benchee_html, "~> 0.1.0", only: [:dev, :test]},
+      {:eflame, "~> 1.0.1", only: :dev},
+      {:exprof, "~> 0.2.0", only: :dev},
     ]
   end
 end

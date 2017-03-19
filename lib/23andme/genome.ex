@@ -24,15 +24,15 @@ defmodule ExVcf.Andme.Genome do
   end
 
   # This is a pre-compressed binary representation of a map
-  def ref_path, do:  Path.join(~w(#{File.cwd!} data /23andme_v4_hg19_ref.erlang))
+  def ref_path, do:  Path.join(~w(#{File.cwd!} data /23andme_v4_grch37_ref.erlang))
+  #def ref_path, do:  Path.join(~w(#{File.cwd!} data /23andme_v4_hg19_ref.erlang))
   def read_reference do
     ref_path() |> File.read! |> :erlang.binary_to_term
   end
 
   # TODO Add error handling somewhere in here
-  def read_from_file(filename) do
-    filename |>
-    File.read!
+  def read_from_file(file) do
+    File.read!(file)
     |> String.splitter("\n", trim: true)
     |> Enum.reduce([], fn(x, acc) ->
       case String.first(x) do
@@ -100,11 +100,10 @@ defmodule ExVcf.Andme.Genome do
   def vcf_line(_, %Genome{genotype: "I"}), do: nil
   def vcf_line(_, %Genome{genotype: "D"}), do: nil
   def vcf_line(ref, data) do
-    ref_base = ref |> Map.get(:ref) |> String.capitalize
+    ref_base = ref |> Map.get(:ref)
     body = %Body{pos: data.position, id: [data.rsid], ref: ref_base}
     allele = data.genotype
              |> String.split("", parts: 2)
-             |> Enum.map(fn(x) -> String.capitalize(x) end)
     proc_allele(%{body | chrom: convert_chrom(data.chromosome)}, allele)
   end
 

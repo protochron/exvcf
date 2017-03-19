@@ -88,7 +88,6 @@ defmodule ExVcf.Andme.Genome do
 
   defp convert_chrom(chrom) do
     case chrom do
-      "MT" -> "chrM"
       x -> "chr#{x}"
     end
   end

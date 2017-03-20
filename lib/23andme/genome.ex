@@ -76,6 +76,7 @@ defmodule ExVcf.Andme.Genome do
       {:ok, result} ->
         vcf = Vcf.new
         header = vcf.header
+                 |> ExVcf.Vcf.Header.add_meta(ExVcf.Vcf.HeaderLine.new_kv("reference", "file:///data/23andme_v4_grch37_ref.erlang"))
                  |> ExVcf.Vcf.Header.add_format(ExVcf.Vcf.Format.new_string("GT", 1, "Genotype"))
                  |> ExVcf.Vcf.Header.add_sample("GENOTYPE")
         %{vcf | header: header, body: result} |> stringify
